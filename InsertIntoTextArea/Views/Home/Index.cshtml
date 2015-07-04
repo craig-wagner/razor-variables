@@ -1,0 +1,85 @@
+﻿@model InsertIntoTextArea.Models.TemplateBuilderViewModel
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<table>
+    <tr>
+        <td valign="top" width="50%">
+            <textarea rows="5" cols="80" id="body" name="body">Dear @@FirstName @@LastName</textarea>
+            <br /><br />
+
+            <select id="tokens">
+                <option></option>
+                @foreach( var key in Model.AvailableFields.Keys )
+                {
+                    <optgroup label="@key">
+                        @foreach( var kvp in Model.AvailableFields[key] )
+                        {
+                            <option value="@kvp.Value">@kvp.Key</option>
+                        }
+                    </optgroup>
+                }
+            </select>
+
+            <button id="insert" type="button">Insert</button>
+            <br />
+            <br />
+            <button id="validate" type="button">Validate</button>
+            <div id="validateDiv" style="border: black 4px dashed; "></div>
+        </td>
+        <td valign="top" width="50%">
+            <button id="preview" type="button">Preview</button>
+
+            <div id="previewDiv" style="border: black 4px dashed;"></div>
+        </td>
+    </tr>
+</table>
+
+<script>
+    $(document).ready(function () {
+        $("#insert").click(function () {
+            var body = $("#body");
+            var sel = body.getSelection();
+            var text = $("#tokens").val();
+
+            body.deleteSelectedText();
+            body.insertText("@@" + text, sel.start, "collapseToEnd");
+        });
+
+        $("#preview").click(function () {
+            $("#previewDiv").html("");
+
+            var ajaxParams = {
+                body: $("#body").val(),
+            };
+            var jqxhr = $.get("@Url.Content("~/Home/Preview")", ajaxParams)
+                .done(function (data) {
+                    if (data) {
+                        $("#previewDiv").html(data);
+                    } else {
+                        window.location = ruleListUrl;
+                    }
+                });
+        });
+
+        $("#validate").click(function () {
+            $("#validateDiv").html("");
+
+            var ajaxParams = {
+                body: $("#body").val(),
+            };
+            var jqxhr = $.get("@Url.Content("~/Home/validate")", ajaxParams)
+                .done(function (data) {
+                    if (data) {
+                        $("#validateDiv").html(data);
+                    } else {
+                        window.location = ruleListUrl;
+                    }
+                });
+        });
+    });
+</script>
